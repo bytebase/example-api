@@ -28,7 +28,7 @@ export async function fetchData(url: string, token: string, options: RequestInit
     return response.json();
 }
 
-/* Generate token */ 
+/* Generate token */
 export async function generateBBToken() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BB_HOST}/v1/auth/login`, {
         method: "POST",
@@ -51,12 +51,17 @@ export async function generateBBToken() {
 async function createSheet(project: string, database: BytebaseDatabase, SQL: string) {
     const token = await generateBBToken();
     const newSheet = {
-        database: database.name,
+        name: ``,
         title: ``,
         content: Buffer.from(SQL).toString('base64'),
-        type: `TYPE_SQL`,
-        source: `SOURCE_BYTEBASE_ARTIFACT`,
-        visibility: `VISIBILITY_PUBLIC`,
+        "payload": {
+            "type": "TYPE_UNSPECIFIED",
+            "commands": [{
+                "start": 1,
+                "end": 1
+            }]
+        },
+        engine: `ENGINE_UNSPECIFIED`
     };
 
     const response = await fetchData(`${process.env.NEXT_PUBLIC_BB_HOST}/v1/${project}/sheets`, token, {
@@ -98,9 +103,7 @@ async function createPlan(project: string, database: BytebaseDatabase, sheetName
 
 async function createIssue(project: string, database: BytebaseDatabase, planName: string, summary: string, description: string, jiraIssueKey: string) {
  
-    console.log("=============createIssue before bbtoken");
     const token = await generateBBToken();
-    console.log("=============createIssue after bbtoken");
     const jiraBaseUrl = process.env.NEXT_PUBLIC_JIRA_BASE_URL;
     const jiraIssueUrl = `${jiraBaseUrl}/browse/${jiraIssueKey}`;
     const newIssue = {
@@ -110,7 +113,6 @@ async function createIssue(project: string, database: BytebaseDatabase, planName
         "title": `[JIRA>${jiraIssueKey}] ${summary}`,
         "description": `Jira Issue Link: [${jiraIssueUrl}](${jiraIssueUrl})\n\n${description}`,
         "type": "DATABASE_CHANGE",
-        "assignee": "",
         "plan": planName
     };
 

@@ -53,7 +53,7 @@ declare global {
 }
 
 export async function POST(request: Request) {
-    //console.log(`${request.method} request received`, request);
+    console.log(`${request.method} request received`, request);
 
     try {
         const body: JiraWebhookPayload = await request.json();
@@ -92,12 +92,16 @@ export async function POST(request: Request) {
 
             // Create Bytebase issue
             const token = await generateBBToken();
+
+            console.log("=============token", token);
             const allProjectData = await fetchData(`${process.env.NEXT_PUBLIC_BB_HOST}/v1/projects`, token);
 
             console.log("=============allProjectData", allProjectData);
             
             // Find matching Bytebase project
-            const matchingProject = allProjectData.projects.find((project: BytebaseProject) => project.key === projectKey);
+            // Jira project key is `API`
+            // BB project name is `projects/jira-api`
+            const matchingProject = allProjectData.projects.find((project: BytebaseProject) => project.name.split('/').pop() === `${process.env.NEXT_PUBLIC_JIRA_PREFIX_IN_BB}${projectKey.toLowerCase()}`);
             if (!matchingProject) {
                 return Response.json({ error: 'No matching Bytebase project found' }, { status: 400 });
             }
