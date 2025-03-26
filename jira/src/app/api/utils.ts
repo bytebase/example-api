@@ -180,19 +180,17 @@ export async function createBBIssueWorkflow(project: string, database: BytebaseD
 }
 
 export async function updateJiraIssueAfterBBIssueCreated(issueKey: string, bytebaseIssueLink: string) {
-    console.log("=============update-jira-issue", issueKey, bytebaseIssueLink);
+    //console.log("=============update-jira-issue", issueKey, bytebaseIssueLink);
 
     if (!issueKey) {
         throw new Error('Issue key is missing');
     }
 
-    const jiraApiUrl = `https://bytebase.atlassian.net/rest/api/3/issue/${issueKey}`;
+    const jiraApiUrl = `${process.env.NEXT_PUBLIC_JIRA_BASE_URL}/rest/api/3/issue/${issueKey}`;
     const jiraTransitionUrl = `${jiraApiUrl}/transitions`;
     const jiraAuth = Buffer.from(
         `${process.env.NEXT_PUBLIC_JIRA_EMAIL}:${process.env.NEXT_PUBLIC_JIRA_API_TOKEN}`
     ).toString('base64');
-
-    console.log("=============update-jira-issue jiraApiUrl", jiraApiUrl);
 
     try {
         // First, update the Bytebase issue link
@@ -229,14 +227,11 @@ export async function updateJiraIssueAfterBBIssueCreated(issueKey: string, byteb
         }
 
         const transitions = await transitionsResponse.json();
-        console.log("Available transitions:", transitions);
 
         // Find the "In Progress" transition
         const inProgressTransition = transitions.transitions.find(
             (t: any) => t.name === "In Progress"
         );
-
-        console.log("=============inProgressTransition", inProgressTransition);
 
         if (!inProgressTransition) {
             throw new Error('In Progress transition not found');
@@ -257,11 +252,7 @@ export async function updateJiraIssueAfterBBIssueCreated(issueKey: string, byteb
             }),
         });
 
-        console.log("Transition Response status:", transitionResponse.status);
-        console.log("Transition Response headers:", Object.fromEntries(transitionResponse.headers.entries()));
-
         const transitionResponseText = await transitionResponse.text();
-        console.log("Transition Response body:", transitionResponseText);
 
         if (!transitionResponse.ok) {
             throw new Error(`Failed to transition Jira issue: ${transitionResponse.status} ${transitionResponse.statusText} - ${transitionResponseText}`);
@@ -275,7 +266,7 @@ export async function updateJiraIssueAfterBBIssueCreated(issueKey: string, byteb
 }
 
 export async function updateJiraIssueStatus(issueKey: string, status: string) {
-    console.log(`Updating Jira issue ${issueKey} status to ${status}`);
+    //console.log(`Updating Jira issue ${issueKey} status to ${status}`);
 
     if (!issueKey) {
         throw new Error('Issue key is missing');
@@ -301,7 +292,7 @@ export async function updateJiraIssueStatus(issueKey: string, status: string) {
         }
 
         const transitions = await transitionsResponse.json();
-        console.log("Available transitions:", transitions);
+        //console.log("Available transitions:", transitions);
 
         // Find the transition for the desired status
         const transition = transitions.transitions.find(
