@@ -15,8 +15,8 @@ interface JiraInfo {
 }
 
 interface BytebaseInfo {
-  issueId: number;
   issueName: string;
+  issueTitle: string;
   issueStatus: string;
   issueType: string;
   issueDescription: string;
@@ -33,33 +33,57 @@ export default function WebhookInfoPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWebhookInfo = async () => {
-    setIsFetching(true);
-    setError(null);
+  const fetchJiraInfo = async () => {
     try {
+
       const response = await fetch('/api/fetch-jira-issue');
       if (response.ok) {
         const data = await response.json();
         if (data) {
           setJiraInfo(data.jira);
-          setBytebaseInfo(data.bytebase);
-          setLastUpdated(new Date());
         }
       } else {
-        setError('Failed to fetch webhook info');
+        console.error('Failed to fetch Jira info');
       }
     } catch (error) {
-      setError('Error fetching webhook info: ' + (error instanceof Error ? error.message : String(error)));
+      console.error('Error fetching Jira info:', error);
     }
-    setIsFetching(false);
+  };
+
+  const pollBytebaseIssues = async () => {
+    try {
+      const response = await fetch('/api/poll-bytebase-issues');
+
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data && data.updatedIssues?.length > 0) {
+          // Get the most recent Bytebase issue
+          setBytebaseInfo(data.updatedIssues[0]);
+        }
+      } else {
+        console.error('Failed to poll Bytebase issues');
+      }
+    } catch (error) {
+      console.error('Error polling Bytebase issues:', error);
+    }
+    setLastUpdated(new Date());
   };
 
   useEffect(() => {
-    fetchWebhookInfo(); // Fetch immediately on mount
+    // Initial fetches
+    fetchJiraInfo();
+    pollBytebaseIssues();
 
-    const intervalId = setInterval(fetchWebhookInfo, 3000); // Fetch every 3 seconds
+    // Set up polling intervals
+    const jiraIntervalId = setInterval(fetchJiraInfo, 3000); // Jira every 3 seconds
+    const bytebaseIntervalId = setInterval(pollBytebaseIssues, 3000); // Bytebase every 3 seconds
 
-    return () => clearInterval(intervalId); // Clean up on unmount
+    // Cleanup on unmount
+    return () => {
+      clearInterval(jiraIntervalId);
+      clearInterval(bytebaseIntervalId);
+    };
   }, []);
 
   const renderBytebaseLink = (link: string | null) => {
@@ -74,12 +98,14 @@ export default function WebhookInfoPage() {
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-1">Webhook Monitor</h1>
-      <h2 className="text-sm text-gray-500 mb-4">Fetch latest Jira and Bytebase Issue related webhook, auto refresh every 3 seconds</h2>
-     <ol className="list-decimal list-inside text-sm mb-4">
-      <li> A new issue created in Jira will trigger a new issue creation in Bytebase </li>
-      <li> When the issue is created in Bytebase, the Jira issue will be updated with the Bytebase issue link and set to In progress </li>
-      <li> When the issue in Bytebase is updated as Done, the Jira issue will be set to Done </li>
-     </ol>
+      <h2 className="text-sm text-gray-500 mb-4">
+        Jira updates every 3 seconds, Bytebase updates every 3 seconds
+      </h2>
+      <ol className="list-decimal list-inside text-sm mb-4">
+        <li>A new issue created in Jira will trigger a new issue creation in Bytebase</li>
+        <li>When the issue is created in Bytebase, the Jira issue will be updated with the Bytebase issue link and set to In progress</li>
+        <li>When the issue in Bytebase is updated as Done, the Jira issue will be set to Done</li>
+      </ol>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
       
@@ -103,8 +129,8 @@ export default function WebhookInfoPage() {
           <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
             <h3 className="text-xl font-semibold mb-4">Last changed Bytebase Issue</h3>
             <p><strong>Project Name:</strong> {bytebaseInfo.projectName}</p>
-            <p><strong>Issue ID:</strong> {bytebaseInfo.issueId}</p>
             <p><strong>Issue Name:</strong> {bytebaseInfo.issueName}</p>
+            <p><strong>Issue Title:</strong> {bytebaseInfo.issueTitle}</p>
             <p><strong>Issue Description:</strong> {bytebaseInfo.issueDescription}</p>
             <p><strong>Issue Status:</strong> {bytebaseInfo.issueStatus}</p>
           </div>
@@ -116,15 +142,8 @@ export default function WebhookInfoPage() {
       )}
 
       <p className="text-sm text-gray-600">
-        {isFetching ? "Fetching..." : `Last updated: ${lastUpdated ? lastUpdated.toLocaleString() : 'Never'}`}
+        Last updated: {lastUpdated ? lastUpdated.toLocaleString() : 'Never'}
       </p>
-      <button
-        className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        onClick={fetchWebhookInfo}
-        disabled={isFetching}
-      >
-        Refresh Now
-      </button>
     </div>
   );
 }

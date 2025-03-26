@@ -15,8 +15,8 @@ declare global {
 
   // eslint-disable-next-line no-var
   var lastBytebaseWebhook: {
-    issueId: number;
     issueName: string;
+    issueTitle: string;
     issueStatus: string;
     issueType: string;
     issueDescription: string;

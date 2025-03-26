@@ -46,12 +46,6 @@ interface BytebaseDatabase {
   environment: string;
 }
 
-// Declare the global variable
-declare global {
-  // eslint-disable-next-line no-var
-  var lastJiraWebhook: ParsedData | null;
-}
-
 export async function POST(request: Request) {
     console.log(`${request.method} request received`, request);
 
@@ -64,8 +58,12 @@ export async function POST(request: Request) {
             return Response.json({ error: 'Not a Database Change issue' }, { status: 400 });
         }
 
-        const issueKey = body.issue.key;
         const projectKey = body.issue.fields.project.key;
+        if (projectKey !== process.env.NEXT_PUBLIC_JIRA_PROJECT_KEY) {
+            return Response.json({ error: 'Not the Configured Jira Project' }, { status: 400 });
+        }
+
+        const issueKey = body.issue.key;
         const summary = body.issue.fields.summary;
         const description = body.issue.fields.description;
         const sqlStatement = body.issue.fields.customfield_10038;
@@ -88,29 +86,11 @@ export async function POST(request: Request) {
         // Check if this is a new issue creation
         if (body.webhookEvent === "jira:issue_created" && body.issue_event_type_name === "issue_created") {
 
-            global.lastJiraWebhook = parsedData;
-
             // Create Bytebase issue
             const token = await generateBBToken();
 
-            console.log("=============token", token);
-            const allProjectData = await fetchData(`${process.env.NEXT_PUBLIC_BB_HOST}/v1/projects`, token);
-
-            console.log("=============allProjectData", allProjectData);
-            
-            // Find matching Bytebase project
-            // Jira project key is `API`
-            // BB project name is `projects/jira-api`
-            const matchingProject = allProjectData.projects.find((project: BytebaseProject) => project.name.split('/').pop() === `${process.env.NEXT_PUBLIC_JIRA_PREFIX_IN_BB}${projectKey.toLowerCase()}`);
-            if (!matchingProject) {
-                return Response.json({ error: 'No matching Bytebase project found' }, { status: 400 });
-            }
-
-            console.log("=============matchingProject", matchingProject);
             // Fetch databases for the matching project
-            const databasesData = await fetchData(`${process.env.NEXT_PUBLIC_BB_HOST}/v1/${matchingProject.name}/databases`, token);
-
-            console.log("=============databasesData", databasesData);
+            const databasesData = await fetchData(`${process.env.NEXT_PUBLIC_BB_HOST}/v1/${process.env.NEXT_PUBLIC_BB_PROJECT_NAME}/databases`, token);
             
             // Find matching database
             const matchingDatabase = databasesData.databases.find((db: BytebaseDatabase) => db.name.split('/').pop() === database);
@@ -118,10 +98,8 @@ export async function POST(request: Request) {
                 return Response.json({ error: 'No matching Bytebase database found' }, { status: 400 });
             }
 
-            console.log("=============matchingDatabase", matchingDatabase);
-
             // Create Bytebase issue
-            const result = await createBBIssueWorkflow(matchingProject.name, matchingDatabase, sqlStatement, summary, description, issueKey);
+            const result = await createBBIssueWorkflow(process.env.NEXT_PUBLIC_BB_PROJECT_NAME, matchingDatabase, sqlStatement, summary, description, issueKey);
             
             if (result.success && result.issueLink) {
                 bytebaseIssueLink = result.issueLink;
@@ -137,14 +115,15 @@ export async function POST(request: Request) {
             } else {
                 return Response.json({ error: 'Failed to create Bytebase issue', details: result.message }, { status: 500 });
             }
+            // Store the parsed data in a global variable for both create and update events
+            global.lastJiraWebhook = parsedData;
         } else if (body.webhookEvent === "jira:issue_updated") {
             // Handle issue update
             console.log("Jira issue updated:", issueKey);
             // You might want to perform additional actions here for issue updates
+            // Store the parsed data in a global variable for both create and update events
+            global.lastJiraWebhook = parsedData;
         }
-
-        // Store the parsed data in a global variable for both create and update events
-        global.lastJiraWebhook = parsedData;
 
         return Response.json({ message: 'Webhook received and processed successfully', data: parsedData });
     } catch (error) {
