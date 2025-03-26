@@ -29,7 +29,6 @@ interface BytebaseInfo {
 export default function WebhookInfoPage() {
   const [jiraInfo, setJiraInfo] = useState<JiraInfo | null>(null);
   const [bytebaseInfo, setBytebaseInfo] = useState<BytebaseInfo | null>(null);
-  const [isFetching, setIsFetching] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 

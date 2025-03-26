@@ -12,24 +12,10 @@ declare global {
     status: string;
     bytebaseIssueLink: string;
   } | null;
-
-  // eslint-disable-next-line no-var
-  var lastBytebaseWebhook: {
-    issueName: string;
-    issueTitle: string;
-    issueStatus: string;
-    issueType: string;
-    issueDescription: string;
-    projectId: number;
-    projectName: string;
-    bytebaseIssueLink: string;
-  } | null;
 }
 
 export async function GET() {
-  // Retrieve the last Jira and Bytebase webhook data from the global variables
+  // Retrieve the last Jira webhook data from the global variables
   const lastJiraWebhook = global.lastJiraWebhook || null;
-  const lastBytebaseWebhook = global.lastBytebaseWebhook || null;
-
-  return Response.json({ jira: lastJiraWebhook, bytebase: lastBytebaseWebhook });
+ return Response.json({ jira: lastJiraWebhook });
 }

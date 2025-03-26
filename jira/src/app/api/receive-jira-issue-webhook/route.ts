@@ -36,22 +36,17 @@ interface ParsedData {
   bytebaseIssueLink: string;
 }
 
-interface BytebaseProject {
-  key: string;
-  name: string;
-}
-
 interface BytebaseDatabase {
   name: string;
   environment: string;
 }
 
 export async function POST(request: Request) {
-    console.log(`${request.method} request received`, request);
+  //  console.log(`${request.method} request received`, request);
 
     try {
         const body: JiraWebhookPayload = await request.json();
-        console.log('Received payload:', JSON.stringify(body));
+     //   console.log('Received payload:', JSON.stringify(body));
 
         const issueType = body.issue.fields.issuetype.name;
         if (issueType !== 'Database Change') {
