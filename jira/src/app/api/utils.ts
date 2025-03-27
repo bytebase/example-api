@@ -48,7 +48,7 @@ export async function generateBBToken() {
     return token.token;
 }
 
-async function createSheet(project: string, database: BytebaseDatabase, SQL: string) {
+async function createSheet(project: string, SQL: string) {
     const token = await generateBBToken();
     const newSheet = {
         name: ``,
@@ -142,7 +142,7 @@ export async function createBBIssueWorkflow(project: string, database: BytebaseD
 
     console.log("=============createIssueWorkflow", project, database, SQL, summary, description);
     try {
-        const sheetData = await createSheet(project, database, SQL);
+        const sheetData = await createSheet(project, SQL);
         console.log("--------- createdSheetData ----------", sheetData);
 
         const planData = await createPlan(project, database, sheetData.name);
