@@ -4,7 +4,7 @@ This is a sample app demonstrating how to integrate [Bytebase](https://github.co
 
 Corresponding [tutorial 🔗](https://www.bytebase.com/docs/tutorials/database-change-management-with-jira-automated/)
 
-![Jira Integration](./docs/jira-bb-workflow.gif)
+![Jira Integration](./docs/jira-bb-workflow-poll.gif)
 
 ## Prerequisites
 
@@ -33,12 +33,15 @@ Corresponding [tutorial 🔗](https://www.bytebase.com/docs/tutorials/database-c
 3. Update the `.env.local` file with your Bytebase and Jira details:
 
    ```
-   NEXT_PUBLIC_BB_HOST=your_bytebase_host
-   NEXT_PUBLIC_BB_SERVICE_ACCOUNT=your_service_account
-   NEXT_PUBLIC_BB_SERVICE_KEY=your_service_key
-   JIRA_HOST=your_jira_host
-   JIRA_EMAIL=your_jira_email
-   JIRA_API_TOKEN=your_jira_api_token
+   NEXT_PUBLIC_JIRA_BASE_URL=https://xxxxxx.atlassian.net
+   NEXT_PUBLIC_JIRA_EMAIL=xxx@xxxx.com
+   NEXT_PUBLIC_JIRA_API_TOKEN=xxxxxxx
+   NEXT_PUBLIC_JIRA_PROJECT_KEY=KEY
+   NEXT_PUBLIC_BB_PROJECT_NAME=projects/jira-api
+   NEXT_PUBLIC_BB_HOST=https://xxxxxxx
+   NEXT_PUBLIC_BB_SERVICE_ACCOUNT=xxxx@service.bytebase.com
+   NEXT_PUBLIC_BB_SERVICE_KEY=bbs_xxxxxx
+
    ```
 
 4. Install dependencies and run the development server:
