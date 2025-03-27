@@ -4,6 +4,8 @@
 NEXT_PUBLIC_JIRA_BASE_URL=https://xxxxxx.atlassian.net
 NEXT_PUBLIC_JIRA_EMAIL=xxx@xxxx.com
 NEXT_PUBLIC_JIRA_API_TOKEN=xxxxxxx
+NEXT_PUBLIC_JIRA_PROJECT_KEY=KEY
+NEXT_PUBLIC_BB_PROJECT_NAME=projects/jira-api
 NEXT_PUBLIC_BB_HOST=https://xxxxxxx
 NEXT_PUBLIC_BB_SERVICE_ACCOUNT=xxxx@service.bytebase.com
 NEXT_PUBLIC_BB_SERVICE_KEY=bbs_xxxxxx
