@@ -5,8 +5,6 @@ export default async function Home() {
   const token = await generateToken();
   const allProjectData = await fetchData(`${process.env.NEXT_PUBLIC_BB_HOST}/v1/projects`, token);
 
-//  console.log("allProjectData--------------", allProjectData);
-
   return (
     <main className="flex flex-col w-full p-10 items-center">
       <AddIssueForm allProjects={allProjectData.projects} />
