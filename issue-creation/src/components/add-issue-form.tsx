@@ -129,7 +129,7 @@ export default function AddIssueForm({ allProjects }: { allProjects: any[] }) {
 
         <div className="flex flex-col">
         <button type="button" className="rounded-md bg-yellow-500  px-3 py-2 text-sm font-semibold text-white shadow-sm" onClick={handleCheck}>Run SQL Review only</button>
-        {checkResult && 
+        {checkResult && checkResult.advices && checkResult.advices.length > 0 && 
         <ul className="bg-yellow-100">
             {checkResult.advices.map((subject, index) => (
                   <li key={index} className="py-4">{index} {JSON.stringify(subject)}</li>
