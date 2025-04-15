@@ -2,12 +2,17 @@ import { v4 } from 'uuid';
 
 async function createSheet(project: string, database: string, SQL: string) {
     const newSheet = {
-        database: database,
+        name: ``,
         title: ``,
         content: Buffer.from(SQL).toString('base64'),
-        type: `TYPE_SQL`,
-        source: `SOURCE_BYTEBASE_ARTIFACT`,
-        visibility: `VISIBILITY_PUBLIC`,
+        "payload": {
+            "type": "TYPE_UNSPECIFIED",
+            "commands": [{
+                "start": 1,
+                "end": 1
+            }]
+        },
+        engine: `ENGINE_UNSPECIFIED`
     };
 
     const response = await fetch('/api/sheets/' + encodeURIComponent(project), {
@@ -52,9 +57,8 @@ async function createIssue(project: string, database: string, planName: string) 
         "approvalTemplates": [],
         "subscribers": [],
         "title": `Issue: Change database ${database}`,
-        "description": "dddd",
+        "description": "",
         "type": "DATABASE_CHANGE",
-        "assignee": "",
         "plan": planName
     };
 
@@ -95,6 +99,7 @@ export async function createIssueWorkflow(project: string, database: string, SQL
         const projectName = project.split('/')[1];
 
         // Extract just the issue number from issueData.name
+        console.log("--------- issueData ----------", issueData);
         const issueNumber = issueData.name.split('/').pop();
 
         // Construct the correct issue URL
