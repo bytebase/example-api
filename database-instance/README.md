@@ -10,9 +10,9 @@ You have to call Bytebase API with [service account](https://www.bytebase.com/do
 export bytebase_url=http://localhost:8080
 export bytebase_account=api-sample@service.bytebase.com
 export bytebase_password=bbs_bQlG4Lc1kRt9fQNa1rNf
-bytebase_token=$(curl -v ${bytebase_url}/v1/auth/login \
-   --data-raw '{"email":"'${bytebase_account}'","password":"'${bytebase_password}'","web":true}' \
-   --compressed 2>&1 | grep token | grep -o 'access-token=[^;]*;' | grep -o '[^;]*' | sed 's/access-token=//g; s/;//g')
+bytebase_token=$(curl -s ${bytebase_url}/v1/auth/login \
+   --data-raw '{"email":"'${bytebase_account}'","password":"'${bytebase_password}'"}' \
+   --compressed | grep -o '"token":"[^"]*"' | sed 's/"token":"//; s/"$//')
 echo $bytebase_token
 ```
 
